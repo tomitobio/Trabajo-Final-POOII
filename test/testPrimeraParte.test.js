@@ -1,8 +1,5 @@
 "use strict";
 
-// Asumimos que estas funciones las crearás en tu archivo "factories.js"
-const { crearCliente, crearPaquete } = require("./factories");
-
 describe("Gestión de Cuenta y Saldo del Cliente", () => {
     
     // TEST 1
