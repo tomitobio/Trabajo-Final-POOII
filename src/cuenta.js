@@ -7,6 +7,8 @@ const Cuenta = function(nombreCliente, numeroCuenta) {
     this.obtenerSaldo = () => this.saldo;
     
 
+    // esto es otro   comentario
+
 };
 
 
