@@ -94,7 +94,70 @@ describe("Gestion de Paquete", () => {
         });
     });
 
-    // TEST 7
-
 });
 
+
+describe("Gestión de Compras y Saldo", () => {
+    
+    // TEST 1
+    test("El cliente puede cargar saldo en su cuenta prepaga", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        
+        cliente.cargarSaldo(1000);
+        
+        expect(cliente.obtenerSaldo()).toBe(1000);
+    });
+
+    // TEST 2
+    test("El cliente no puede cargar un monto negativo", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        expect(() => {
+            cliente.cargarSaldo(-500);
+        }).toThrow("El monto a cargar no puede ser negativo");
+    });
+
+     // TEST 3
+     test("El cliente puede cargar saldo varias veces y se acumula correctamente", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);   
+        cliente.cargarSaldo(1000);
+        cliente.cargarSaldo(500);
+        expect(cliente.obtenerSaldo()).toBe(1500);
+        }); 
+
+    // TEST 4
+    test("El cliente puede comprar un paquete si tiene saldo suficiente", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 30, 400);
+        
+        cliente.cargarSaldo(500);
+        cliente.cargarSaldo(paquete.obtenerInfo().costo);
+
+        cliente.comprarPaquete(paquete);
+        expect(cliente.obtenerSaldo()).toBe(500);
+    });
+
+    // TEST 5
+    test("El cliente no puede comprar un paquete si tiene saldo insuficiente", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 30, 400);
+        
+        cliente.cargarSaldo(paquete.obtenerInfo().costo - 100); 
+        expect(() => {
+            cliente.comprarPaquete(paquete);
+        }).toThrow("Saldo insuficiente para comprar el paquete");
+    });
+
+    // TEST 6
+    test("El cliente compra varios paquetes que podemos chequear", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
+        const paquete2 = CrearPaquete(5.0, 2000, 60, 800);
+        
+        cliente.cargarSaldo(paquete1.obtenerInfo().costo + paquete2.obtenerInfo().costo); 
+        cliente.comprarPaquete(paquete1);
+        cliente.comprarPaquete(paquete2);
+        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete1, paquete2]); 
+    });
+    
+
+});
