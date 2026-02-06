@@ -148,16 +148,44 @@ describe("Gestión de Compras y Saldo", () => {
     });
 
     // TEST 6
-    test("El cliente compra varios paquetes que podemos chequear", () => {
+    test("El cliente no puede comprar varios paquetes al mismo tiempo por regla de negocio", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
         const paquete2 = CrearPaquete(5.0, 2000, 60, 800);
         
         cliente.cargarSaldo(paquete1.obtenerInfo().costo + paquete2.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete1);
-        cliente.comprarPaquete(paquete2);
-        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete1, paquete2]); 
+        expect(() => { 
+            cliente.comprarPaquete(paquete2);
+        }).toThrow("El cliente no puede comprar varios paquetes al mismo tiempo por regla de negocio");
     });
-    
+
+    // TEST 7
+    test("El cliente puede comprar un paquete después de haber comprado y usado otro", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
+        const paquete2 = CrearPaquete(5.0, 2000, 60, 800);
+
+        cliente.cargarSaldo(paquete1.obtenerInfo().costo + paquete2.obtenerInfo().costo); 
+        cliente.comprarPaquete(paquete1);
+        // Simular uso del paquete1
+        cliente.usarPaquete();
+        cliente.comprarPaquete(paquete2);
+
+        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete2]);
+    });
+
+    // TEST 8
+    test("El cliente puede configurar la renovacion automatica de su paquete", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 30, 400);
+
+        cliente.cargarSaldo(paquete.obtenerInfo().costo); 
+        cliente.comprarPaquete(paquete, true);
+        cliente.usarPaquete();
+
+        expect(cliente.renovacionAutomatica).toBe(true);
+        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete]);
+    });
 
 });

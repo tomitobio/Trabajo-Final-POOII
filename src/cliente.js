@@ -3,6 +3,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.numeroLinea = numeroLinea;
     this.saldo = 0;
     this.paquetesContratados = [];
+    this.renovacionAutomatica = false;
 
     this.obtenerInfo = () => {
         return {
@@ -22,19 +23,31 @@ const Cliente = function(nombreCliente, numeroLinea) {
         return saldo = this.saldo;
     };
 
-    this.comprarPaquete = (paquete) => {
+    this.comprarPaquete = (paquete, renovacionAutomatica = false) => {
         if (this.saldo < paquete.obtenerInfo().costo) {
             throw new Error("Saldo insuficiente para comprar el paquete");
         }
+        if (this.paquetesContratados.length > 0) {
+            throw new Error("El cliente no puede comprar varios paquetes al mismo tiempo por regla de negocio");
+        }
         this.saldo -= paquete.obtenerInfo().costo;
         this.paquetesContratados.push(paquete);
+        this.renovacionAutomatica = renovacionAutomatica;
     };
     
     this.obtenerPaquetesContratados = () => {
         return paquetes = this.paquetesContratados;
     };
     
-};
+    this.usarPaquete = () => {
+        if (this.paquetesContratados.length === 0) {
+            throw new Error("El cliente no tiene paquetes contratados");
+        }
+        if (this.renovacionAutomatica == false) {
+            this.paquetesContratados = [];
+        }
+    };
+}
 
 module.exports = Cliente;
 
