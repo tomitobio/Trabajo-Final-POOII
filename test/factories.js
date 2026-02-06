@@ -1,5 +1,6 @@
 const Cliente = require('../src/cliente');
 const Paquete = require('../src/paquete');
+const Consumo = require('../src/consumo');
 
 const CrearPaquete = (datosMoviles, minutosLlamada, diasDuracion, costo) => {
     return new Paquete(datosMoviles, minutosLlamada, diasDuracion, costo)
@@ -11,4 +12,8 @@ const CrearCliente = (nombreCliente, numeroLinea) => {
 
 };
 
-module.exports = { CrearCliente, CrearPaquete };
+const CrearConsumo = (tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin) => {
+    return new Consumo(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin)
+};
+
+module.exports = { CrearCliente, CrearPaquete, CrearConsumo };

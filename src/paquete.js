@@ -30,6 +30,47 @@ const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
         };
     };
 
+    this.consumirDias = (diasConsumidos) => {
+        if (diasConsumidos < 0) {
+            throw new Error("La cantidad de dias consumidos no puede ser negativa");
+        }
+        if (diasConsumidos > this.diasDuracion) {
+            throw new Error("La cantidad de dias consumidos no puede superar la cantidad de dias del paquete");
+        }
+        this.diasDuracion -= diasConsumidos;
+    };
+
+    this.consumirDatos = (gigasConsumidos) => {
+        if (gigasConsumidos < 0) {
+            throw new Error("La cantidad de gigas consumidos no puede ser negativa");
+        }
+        if (gigasConsumidos > this.datosMoviles) {
+            throw new Error("La cantidad de gigas consumidos no puede superar la cantidad de datos del paquete");
+        }
+
+        this.datosMoviles -= gigasConsumidos;  
+    };
+
+    this.consumirMinutosLlamada = (minutosConsumidos) => {
+        if (minutosConsumidos < 0) {
+            throw new Error("La cantidad de minutos consumidos no puede ser negativa");
+        }
+        if (minutosConsumidos > this.minutosLlamada) {
+            throw new Error("La cantidad de minutos consumidos no puede superar la cantidad de minutos del paquete");
+        }
+        this.minutosLlamada -= minutosConsumidos;
+    };
+
+    this.consumirRecursos = (gigasConsumidos, diasUsados, tipoRecurso) => {
+        if (tipoRecurso === "Internet") {
+            this.consumirDatos(gigasConsumidos);
+            this.consumirDias(diasUsados);
+        }
+        else if (tipoRecurso === "Llamada") {
+            this.consumirMinutosLlamada(gigasConsumidos);
+            this.consumirDias(diasUsados);
+        }  
+    };
 
 };
 

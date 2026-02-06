@@ -4,6 +4,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.saldo = 0;
     this.paquetesContratados = [];
     this.renovacionAutomatica = false;
+    this.historialConsumos = [];
 
     this.obtenerInfo = () => {
         return {
@@ -47,6 +48,14 @@ const Cliente = function(nombreCliente, numeroLinea) {
             this.paquetesContratados = [];
         }
     };
+
+    this.usarRecursos = (consumo) => {
+        const recursosUsados = consumo.usoDeRecurso();
+        this.paquetesContratados[0].consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2]);
+        this.historialConsumos.push(consumo);
+        this.usarPaquete();
+    };
+
 }
 
 module.exports = Cliente;
