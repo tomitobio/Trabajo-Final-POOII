@@ -20,7 +20,6 @@ const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
     this.diasDuracion = diasDuracion;
     this.costo = costo;
 
-    // devuelve objeto manteniendo aislamiento
     this.obtenerInfo = () => {
         return {
             datosMoviles: this.datosMoviles,

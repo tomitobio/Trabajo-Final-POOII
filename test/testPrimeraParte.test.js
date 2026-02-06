@@ -2,6 +2,14 @@
 
 const { CrearCliente, CrearPaquete, CrearConsumo } = require("./factories");
 
+// Repasando los tests, me doy cuenta que faltan varios tests
+// de partes claves del negocio, como por ejemplo, 
+// test de conversion de MB a GB y test de bloqueo de compra
+// cuando queda saldo de un recurso cualquiera, por los que esos caso puntuales
+// que tal vez deberian haber sido chequeados previamente en el orden de la consigna
+// seran incluidos tanto en tests como refactors sobre el final del codigo
+
+
 describe("Gestión de Cliente", () => {
     // TEST 1
    test("Se le asigna un nombre y numero de linea", () => {
@@ -157,7 +165,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.comprarPaquete(paquete1);
         expect(() => { 
             cliente.comprarPaquete(paquete2);
-        }).toThrow("El cliente no puede comprar varios paquetes al mismo tiempo por regla de negocio");
+        }).toThrow("Aun quedan recursos disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos");
     });
 
     // TEST 7
@@ -323,7 +331,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.comprarPaquete(paquete, true);
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-10-20T10:00:00");
-        
+
         expect(() => {
             cliente.usarRecursos(CrearConsumo("Llamada", -100, inicio, fin));
         }).toThrow("La cantidad de minutos consumidos no puede ser negativa");    
@@ -337,46 +345,163 @@ describe("Gestión de Compras y Saldo", () => {
     test("El cliente desea tener un registro de tiempo de consumos utilizados", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
-        const inicio = new Date("2024-05-10T10:00:00");
-        const fin = new Date("2024-05-10T10:30:00");
-        const consumo = CrearConsumo("Datos Moviles", 500, inicio, fin);
         // Al crear clase consumo, voy a modificar tests anteriores,
-        // donde los consumos eran simples numeros, que quedaran comentados
-        // para ver la evolucion del codigo
-        cliente.cargarSaldo(paquete.obtenerInfo().costo); 
+        // donde los consumos eran simples numeros, que algunos 
+        // quedaran comentados para ver la evolucion del codigo
+        cliente.cargarSaldo(paquete.obtenerInfo().costo);
         cliente.comprarPaquete(paquete, true);
 
-        cliente.usarDatos(500, consumo);
-        
+        const inicio = new Date("2024-05-10T10:00:00");
+        const fin = new Date("2024-05-20T10:00:00");
+        const consumo = CrearConsumo("Internet", 1, inicio, fin);
+
+        // Tambien aproveche para hacer un gran refactor,
+        // en donde el cliente simplemente utiliza recursos 
+        // y los metodos se encargan de seleccionar el tipo de consumo
+        // correcto a partir del objeto Consumo.
+
+        cliente.usarRecursos(consumo);
+
         expect(cliente.obtenerHistorialConsumos()[0]).toEqual({
-            tipo: "Datos Moviles",
-            cantidad: 500,
+            tipo: "Internet",
+            cantidad: 1,
             inicio: inicio,
             fin: fin
         });
     });
 
-     // TEST 18
-    // Creo nuevo objeto Consumos
-    test("El cliente desea tener un registro de tiempo de consumos utilizados", () => {
+    // TEST 18
+    test("NO se puede comprar paquete nuevo si se acabaron los datos pero quedan minutos (No está agotado)", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
+        const paquete2 = CrearPaquete(3, 100, 30, 200);
+
+        cliente.cargarSaldo(1000);
+        cliente.comprarPaquete(paquete1);
+
+        const inicio = new Date("2024-05-10T10:00:00");
+        const fin = new Date("2024-05-20T10:00:00");
+        const consumo = CrearConsumo("Internet", 1, inicio, fin);
+
+        cliente.usarRecursos(consumo);
+
+        expect(() => {
+            cliente.comprarPaquete(paquete2);
+        }).toThrow("Aun quedan recursos disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos"); 
+    });
+
+    // TEST 19
+    test("Se puede comprar paquete nuevo si la fecha actual supera el vencimiento (aunque tenga datos)", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete1 = CrearPaquete(2.5, 1000, 10, 400);
+        const paquete2 = CrearPaquete(3, 100, 30, 200);
+
+        cliente.cargarSaldo(1000);
+        cliente.comprarPaquete(paquete1);
+
+        const inicio1 = new Date("2024-05-10T10:00:00");
+        const fin1 = new Date("2024-05-20T10:00:00");
+        const consumo = CrearConsumo("Internet", 1, inicio1, fin1);
+
+        cliente.usarRecursos(consumo);
+        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+            datosMoviles: 1.5,
+            minutosLlamada: 1000,
+            diasDuracion: 0,
+            costo: 400
+        });
+        cliente.comprarPaquete(paquete2);
+        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete2]);
+    });
+
+    // TEST 20
+    test("El historial debe devolverse ordenado por fecha de inicio", () => {
+        
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
-        const inicio = new Date("2024-05-10T10:00:00");
-        const fin = new Date("2024-05-10T10:30:00");
-        const consumo = CrearConsumo("Datos Moviles", 500, inicio, fin);
-        // Al crear clase consumo, voy a modificar tests anteriores,
-        // donde los consumos eran simples numeros, que quedaran comentados
-        // para ver la evolucion del codigo
+        cliente.cargarSaldo(1000);
+        cliente.comprarPaquete(paquete);
+
+        const inicio1 = new Date("2024-05-10T10:00:00");
+        const fin1 = new Date("2024-05-15T10:00:00");
+        const inicio2 = new Date("2024-05-12T10:00:00");
+        const fin2 = new Date("2024-05-20T10:00:00");
+
+        const consumoHoy = CrearConsumo("Internet", 1, inicio1, fin1);
+        const consumoAyer = CrearConsumo("Internet", 1, inicio2, fin2);
+
+        cliente.usarRecursos(consumoHoy);
+        cliente.usarRecursos(consumoAyer);
+
+        const historial = cliente.obtenerHistorialConsumos();
+        expect(historial[0].inicio).toEqual(inicio1);
+        expect(historial[1].inicio).toEqual(inicio2);
+    });
+
+    // TEST 21
+    test("El historial se puede filtrar por rango de fechas", () => {
+
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(100, 1000, 30, 400);
+        cliente.cargarSaldo(1000);
+        cliente.comprarPaquete(paquete);
+        const fechaEnero = new Date("2024-01-15T10:00:00");
+        const fechaMarzo = new Date("2024-03-15T10:00:00");
+        const fechaMayo = new Date("2024-05-15T10:00:00");
+
+        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaEnero, fechaEnero));
+        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaMarzo, fechaMarzo));
+        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaMayo, fechaMayo));
+
+        const inicioFiltro = new Date("2024-02-01");
+        const finFiltro = new Date("2024-04-01");
+        const historialFiltrado = cliente.obtenerHistorialConsumos({desde: inicioFiltro, hasta: finFiltro});
+
+        expect(historialFiltrado.length).toBe(1);
+        expect(historialFiltrado[0].inicio).toEqual(fechaMarzo);
+    });
+
+    // TEST 22
+    // NO ESTA HECHO
+    test("El cliente consume megas de su paquete durante 15 dias", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 30, 400);
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
+        const inicio = new Date("2024-05-10T10:00:00");
+        const fin = new Date("2024-05-25T10:00:00");
 
-        cliente.usarDatos(500, consumo);
-        
-        expect(cliente.obtenerHistorialConsumos()[0]).toEqual({
-            tipo: "Datos Moviles",
-            cantidad: 500,
-            inicio: inicio,
-            fin: fin
+        // cliente.usarDatos(2 (datos), 15 (dias));
+        const consumo = CrearConsumo("Internet", 2000, inicio, fin);
+        cliente.usarRecursos(consumo);
+
+        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+            datosMoviles: 0.5,
+            minutosLlamada: 1000,
+            diasDuracion: 15,
+            costo: 400
         });
     });
+
+    // TEST 23
+    // Chequear que se auto renueva el paquete al usarlo, si la renovacion automatica esta activada
+    test("El cliente tiene renovacion automatica activada y se le renueva el paquete al usarlo", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 30, 400);
+        cliente.cargarSaldo(paquete.obtenerInfo().costo * 2); 
+        cliente.comprarPaquete(paquete, true);
+        const inicio = new Date("2024-05-10T10:00:00");
+        const fin = new Date("2024-05-25T10:00:00");
+
+        const consumo = CrearConsumo("Internet", 2, inicio, fin);
+        cliente.usarRecursos(consumo);
+        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+            datosMoviles: 2.5,
+            minutosLlamada: 1000,
+            diasDuracion: 30,
+            costo: 400
+        });
+
+    });
+
 });

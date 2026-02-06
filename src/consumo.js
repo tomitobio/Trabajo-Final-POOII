@@ -11,6 +11,15 @@ const Consumo = function(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeF
 
         return [cantidadRecurso, cantidadDias, tipoConsumo];
     };
-};
 
-module.exports = Consumo;
+    this.obtenerInfo = () => {
+        return {
+            tipo: this.tipo,
+            cantidad: this.cantidad,
+            inicio: this.inicio,
+            fin: this.fin
+        };
+    };
+}
+
+module.exports = Consumo
