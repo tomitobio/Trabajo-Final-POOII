@@ -1,10 +1,14 @@
 const Cliente = require('../src/cliente');
+const Paquete = require('../src/paquete');
 
-
-
-const CrearCliente = (nombreCliente, numeroCliente) => {
-    return new Cliente(nombreCliente, numeroCliente)
+const CrearPaquete = (datosMoviles, minutosLlamada, diasDuracion, costo) => {
+    return new Paquete(datosMoviles, minutosLlamada, diasDuracion, costo)
 
 };
 
-module.exports = CrearCliente;
+const CrearCliente = (nombreCliente, numeroLinea) => {
+    return new Cliente(nombreCliente, numeroLinea)
+
+};
+
+module.exports = { CrearCliente, CrearPaquete };

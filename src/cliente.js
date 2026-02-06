@@ -1,15 +1,14 @@
-const Cliente = function(nombreCliente, numeroCuenta) {
+const Cliente = function(nombreCliente, numeroLinea) {
     this.nombreCliente = nombreCliente;
-    this.numeroCuenta = numeroCuenta;
+    this.numeroLinea = numeroLinea;
 
     // devuelve objeto manteniendo aislamiento
-    this.obtenerInfoCliente = () => {
+    this.obtenerInfo = () => {
         return {
             nombre: this.nombreCliente,
-            numeroCuenta: this.numeroCuenta
+            numeroLinea: this.numeroLinea
         };
     };
-
 };
 
 module.exports = Cliente;
