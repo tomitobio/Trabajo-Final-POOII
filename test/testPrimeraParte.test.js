@@ -44,7 +44,7 @@ describe("Gestion de Paquete", () => {
 
         expect(paquete.obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosLlamada: 1000,
+            minutosminutosLlamada: 1000,
             diasDuracion: 30,
             costo: 400
         });
@@ -59,11 +59,11 @@ describe("Gestion de Paquete", () => {
     });
 
     // TEST 3
-    test("No se puede crear un paquete con minutos de llamada negativos", () => {
+    test("No se puede crear un paquete con minutos de minutosLlamada negativos", () => {
         
         expect(() => {
             CrearPaquete(2.5, -1000, 30, 400); 
-        }).toThrow("La cantidad de minutos de llamada no puede ser negativa");
+        }).toThrow("La cantidad de minutos de minutosLlamada no puede ser negativa");
     });
 
     // TEST 4
@@ -90,13 +90,13 @@ describe("Gestion de Paquete", () => {
 
         expect(paquete1.obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosLlamada: 1000,
+            minutosminutosLlamada: 1000,
             diasDuracion: 30,
             costo: 400
         });
         expect(paquete2.obtenerInfo()).toEqual({
             datosMoviles: 5.0,
-            minutosLlamada: 2000,
+            minutosminutosLlamada: 2000,
             diasDuracion: 60,
             costo: 800
         });
@@ -165,7 +165,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.comprarPaquete(paquete1);
         expect(() => { 
             cliente.comprarPaquete(paquete2);
-        }).toThrow("Aun quedan recursos disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos");
+        }).toThrow("Aun quedan recursos o días disponibles del paquete actual, no se puede comprar un nuevo paquete.");
     });
 
     // TEST 7
@@ -174,13 +174,20 @@ describe("Gestión de Compras y Saldo", () => {
         const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
         const paquete2 = CrearPaquete(5.0, 2000, 60, 800);
 
-        cliente.cargarSaldo(paquete1.obtenerInfo().costo + paquete2.obtenerInfo().costo); 
+        cliente.cargarSaldo(10000); 
         cliente.comprarPaquete(paquete1);
-        // Simular uso del paquete1
-        cliente.usarPaquete();
-        cliente.comprarPaquete(paquete2);
 
-        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete2]);
+        cliente.usarRecursos(CrearConsumo("datosMoviles", 2.5 * 1024, new Date("2024-05-10T10:00:00"), new Date("2024-05-15T10:00:00")));
+        cliente.usarRecursos(CrearConsumo("minutosLlamada", 1000, new Date("2024-05-10T10:00:00"), new Date("2024-05-15T10:00:00")));
+
+        cliente.comprarPaquete(paquete2);
+        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+            datosMoviles: 5.0,
+            minutosminutosLlamada: 2000,
+            diasDuracion: 60,
+            costo: 800
+        });
+
     });
 
     // TEST 8
@@ -190,7 +197,6 @@ describe("Gestión de Compras y Saldo", () => {
 
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
-        cliente.usarPaquete();
 
         expect(cliente.renovacionAutomatica).toBe(true);
         expect(cliente.obtenerPaquetesContratados()).toEqual([paquete]);
@@ -206,12 +212,12 @@ describe("Gestión de Compras y Saldo", () => {
         const fin = new Date("2024-05-25T10:00:00");
 
         // cliente.usarDatos(2 (datos), 15 (dias));
-        const consumo = CrearConsumo("Internet", 2, inicio, fin);
+        const consumo = CrearConsumo("datosMoviles", 2000, inicio, fin);
         cliente.usarRecursos(consumo);
 
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
-            datosMoviles: 0.5,
-            minutosLlamada: 1000,
+            datosMoviles: 0.55,
+            minutosminutosLlamada: 1000,
             diasDuracion: 15,
             costo: 400
         });
@@ -226,12 +232,12 @@ describe("Gestión de Compras y Saldo", () => {
 
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-10T10:30:00");
-        const consumo = CrearConsumo("Internet", 5, inicio, fin);
+        const consumo = CrearConsumo("datosMoviles", 5000, inicio, fin);
 
         expect(() => {
             // cliente.usarDatos(5 (datos), 15 (dias));
             cliente.usarRecursos(consumo);
-        }).toThrow("La cantidad de gigas consumidos no puede superar la cantidad de datos del paquete");    
+        }).toThrow("La cantidad de MB consumidos no puede superar la cantidad de datos del paquete");    
 
     });
     
@@ -244,7 +250,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-07-10T10:30:00");
-        const consumo = CrearConsumo("Internet", 1, inicio, fin);
+        const consumo = CrearConsumo("datosMoviles", 1, inicio, fin);
 
         expect(() => {
             // cliente.usarDatos(1, 50);
@@ -262,46 +268,46 @@ describe("Gestión de Compras y Saldo", () => {
         expect(() => {
             const inicio = new Date("2024-05-10T10:00:00");
             const fin = new Date("2024-05-10T10:30:00");
-            const consumo = CrearConsumo("Internet", -1, inicio, fin);
+            const consumo = CrearConsumo("datosMoviles", -1, inicio, fin);
             cliente.usarRecursos(consumo);
-        }).toThrow("La cantidad de gigas consumidos no puede ser negativa");    
+        }).toThrow("La cantidad de MB consumidos no puede ser negativa");    
         expect(() => {
             const inicio = new Date("2024-05-10T10:00:00");
             const fin = new Date("2024-07-10T10:30:00");
-            const consumo = CrearConsumo("Internet", 1, fin , inicio);
+            const consumo = CrearConsumo("datosMoviles", 1, fin , inicio);
             cliente.usarRecursos(consumo);
         }).toThrow("La cantidad de dias consumidos no puede ser negativa"); 
     });
 
     // TEST 13
-    test("El cliente consume minutos de llamada de su paquete durante 10 dias", () => {
+    test("El cliente consume minutos de minutosLlamada de su paquete durante 10 dias", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-20T10:00:00");
-        const consumo = CrearConsumo("Llamada", 100, inicio, fin);
-        // cliente.usarMinutosLlamada(200, 10);
+        const consumo = CrearConsumo("minutosLlamada", 100, inicio, fin);
+        // cliente.usarMinutosminutosLlamada(200, 10);
         
         cliente.usarRecursos(consumo);
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosLlamada: 900,
+            minutosminutosLlamada: 900,
             diasDuracion: 20,
             costo: 400
         });
     });
 
     // TEST 14
-    test("El cliente desea consumir mas minutos de llamada que los que su paquete tiene", () => {
+    test("El cliente desea consumir mas minutos de minutosLlamada que los que su paquete tiene", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-20T10:00:00");
-        const consumo = CrearConsumo("Llamada", 10000, inicio, fin);
+        const consumo = CrearConsumo("minutosLlamada", 10000, inicio, fin);
 
         expect(() => {
             cliente.usarRecursos(consumo);
@@ -309,14 +315,14 @@ describe("Gestión de Compras y Saldo", () => {
     });
 
     // TEST 15
-    test("El cliente desea consumir mas dias que los que su paquete tiene al usar minutos de llamada", () => {
+    test("El cliente desea consumir mas dias que los que su paquete tiene al usar minutos de minutosLlamada", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-10-20T10:00:00");
-        const consumo = CrearConsumo("Llamada", 100, inicio, fin);
+        const consumo = CrearConsumo("minutosLlamada", 100, inicio, fin);
 
         expect(() => {
             cliente.usarRecursos(consumo);
@@ -324,7 +330,7 @@ describe("Gestión de Compras y Saldo", () => {
     });
 
     // TEST 16
-    test("El cliente desea un numero negativo de dias consumidos y/o minutos de llamada consumidos", () => {
+    test("El cliente desea un numero negativo de dias consumidos y/o minutos de minutosLlamada consumidos", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
@@ -333,10 +339,10 @@ describe("Gestión de Compras y Saldo", () => {
         const fin = new Date("2024-10-20T10:00:00");
 
         expect(() => {
-            cliente.usarRecursos(CrearConsumo("Llamada", -100, inicio, fin));
+            cliente.usarRecursos(CrearConsumo("minutosLlamada", -100, inicio, fin));
         }).toThrow("La cantidad de minutos consumidos no puede ser negativa");    
         expect(() => {
-            cliente.usarRecursos(CrearConsumo("Llamada", 100, fin, inicio));
+            cliente.usarRecursos(CrearConsumo("minutosLlamada", 100, fin, inicio));
         }).toThrow("La cantidad de dias consumidos no puede ser negativa"); 
     });
 
@@ -353,7 +359,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-20T10:00:00");
-        const consumo = CrearConsumo("Internet", 1, inicio, fin);
+        const consumo = CrearConsumo("datosMoviles", 1, inicio, fin);
 
         // Tambien aproveche para hacer un gran refactor,
         // en donde el cliente simplemente utiliza recursos 
@@ -363,7 +369,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.usarRecursos(consumo);
 
         expect(cliente.obtenerHistorialConsumos()[0]).toEqual({
-            tipo: "Internet",
+            tipo: "datosMoviles",
             cantidad: 1,
             inicio: inicio,
             fin: fin
@@ -381,13 +387,13 @@ describe("Gestión de Compras y Saldo", () => {
 
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-20T10:00:00");
-        const consumo = CrearConsumo("Internet", 1, inicio, fin);
+        const consumo = CrearConsumo("datosMoviles", 1, inicio, fin);
 
         cliente.usarRecursos(consumo);
 
         expect(() => {
             cliente.comprarPaquete(paquete2);
-        }).toThrow("Aun quedan recursos disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos"); 
+        }).toThrow("Aun quedan recursos o días disponibles del paquete actual, no se puede comprar un nuevo paquete."); 
     });
 
     // TEST 19
@@ -399,17 +405,11 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.cargarSaldo(1000);
         cliente.comprarPaquete(paquete1);
 
-        const inicio1 = new Date("2024-05-10T10:00:00");
-        const fin1 = new Date("2024-05-20T10:00:00");
-        const consumo = CrearConsumo("Internet", 1, inicio1, fin1);
+        const inicio = new Date("2024-05-10T10:00:00");
+        const fin = new Date("2024-05-20T10:00:00");
+        const consumo = CrearConsumo("datosMoviles", 1000, inicio, fin);
 
         cliente.usarRecursos(consumo);
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
-            datosMoviles: 1.5,
-            minutosLlamada: 1000,
-            diasDuracion: 0,
-            costo: 400
-        });
         cliente.comprarPaquete(paquete2);
         expect(cliente.obtenerPaquetesContratados()).toEqual([paquete2]);
     });
@@ -427,8 +427,8 @@ describe("Gestión de Compras y Saldo", () => {
         const inicio2 = new Date("2024-05-12T10:00:00");
         const fin2 = new Date("2024-05-20T10:00:00");
 
-        const consumoHoy = CrearConsumo("Internet", 1, inicio1, fin1);
-        const consumoAyer = CrearConsumo("Internet", 1, inicio2, fin2);
+        const consumoHoy = CrearConsumo("datosMoviles", 1, inicio1, fin1);
+        const consumoAyer = CrearConsumo("datosMoviles", 1, inicio2, fin2);
 
         cliente.usarRecursos(consumoHoy);
         cliente.usarRecursos(consumoAyer);
@@ -449,9 +449,9 @@ describe("Gestión de Compras y Saldo", () => {
         const fechaMarzo = new Date("2024-03-15T10:00:00");
         const fechaMayo = new Date("2024-05-15T10:00:00");
 
-        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaEnero, fechaEnero));
-        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaMarzo, fechaMarzo));
-        cliente.usarRecursos(CrearConsumo("Internet", 1, fechaMayo, fechaMayo));
+        cliente.usarRecursos(CrearConsumo("datosMoviles", 1, fechaEnero, fechaEnero));
+        cliente.usarRecursos(CrearConsumo("datosMoviles", 1, fechaMarzo, fechaMarzo));
+        cliente.usarRecursos(CrearConsumo("datosMoviles", 1, fechaMayo, fechaMayo));
 
         const inicioFiltro = new Date("2024-02-01");
         const finFiltro = new Date("2024-04-01");
@@ -462,46 +462,95 @@ describe("Gestión de Compras y Saldo", () => {
     });
 
     // TEST 22
-    // NO ESTA HECHO
-    test("El cliente consume megas de su paquete durante 15 dias", () => {
+    test("El cliente tiene renovacion automatica activada y se le renueva el paquete al usar todos los datos", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
         const paquete = CrearPaquete(2.5, 1000, 30, 400);
-        cliente.cargarSaldo(paquete.obtenerInfo().costo); 
+        cliente.cargarSaldo(paquete.obtenerInfo().costo * 2); 
         cliente.comprarPaquete(paquete, true);
-        const inicio = new Date("2024-05-10T10:00:00");
-        const fin = new Date("2024-05-25T10:00:00");
 
-        // cliente.usarDatos(2 (datos), 15 (dias));
-        const consumo = CrearConsumo("Internet", 2000, inicio, fin);
+        const inicio1 = new Date("2024-05-01T10:00:00");
+        const fin1 = new Date("2024-05-12T10:00:00");
+        const inicio2 = new Date("2024-05-17T10:00:00");
+        const fin2 = new Date("2024-05-19T10:00:00");
+        const consumo1 = CrearConsumo("datosMoviles", 2.5 * 1024, inicio1, fin1);
+        const consumo2 = CrearConsumo("minutosLlamada", 1000, inicio2, fin2);
+        cliente.usarRecursos(consumo1);
+        cliente.usarRecursos(consumo2);
+
+        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+            datosMoviles: 2.5,
+            minutosminutosLlamada: 1000,
+            diasDuracion: 30,
+            costo: 400
+        });
+    });
+    // TEST 23
+    test("El cliente tiene renovacion automatica activada y se le renueva el paquete al quedarse sin dias", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 10, 400);
+        cliente.cargarSaldo(paquete.obtenerInfo().costo * 2); 
+        cliente.comprarPaquete(paquete, true);
+
+        const inicio = new Date("2024-05-01T10:00:00");
+        const fin = new Date("2024-05-11T10:00:00");
+        const consumo = CrearConsumo("datosMoviles", 2.5 * 1024, inicio, fin);
+        
         cliente.usarRecursos(consumo);
 
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
-            datosMoviles: 0.5,
-            minutosLlamada: 1000,
-            diasDuracion: 15,
+            datosMoviles: 2.5,
+            minutosminutosLlamada: 1000,
+            diasDuracion: 10,
             costo: 400
         });
     });
 
     // TEST 23
-    // Chequear que se auto renueva el paquete al usarlo, si la renovacion automatica esta activada
-    test("El cliente tiene renovacion automatica activada y se le renueva el paquete al usarlo", () => {
+    test("El cliente tiene no precisa renovar ya que le quedan recursos asignados al paquete", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
-        const paquete = CrearPaquete(2.5, 1000, 30, 400);
-        cliente.cargarSaldo(paquete.obtenerInfo().costo * 2); 
-        cliente.comprarPaquete(paquete, true);
-        const inicio = new Date("2024-05-10T10:00:00");
-        const fin = new Date("2024-05-25T10:00:00");
+        const paquete1 = CrearPaquete(2.5, 1000, 30, 400);
+        const paquete2 = CrearPaquete(2.5, 2000, 30, 400);
+        cliente.cargarSaldo(paquete1.obtenerInfo().costo * 2); 
+        cliente.comprarPaquete(paquete1);
 
-        const consumo = CrearConsumo("Internet", 2, inicio, fin);
-        cliente.usarRecursos(consumo);
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
-            datosMoviles: 2.5,
-            minutosLlamada: 1000,
-            diasDuracion: 30,
-            costo: 400
-        });
+        const inicio1 = new Date("2024-05-01T10:00:00");
+        const fin1 = new Date("2024-05-12T10:00:00");
+        const inicio2 = new Date("2024-05-17T10:00:00");
+        const fin2 = new Date("2024-05-19T10:00:00");
+        const consumo1 = CrearConsumo("datosMoviles", 2.5 * 1024, inicio1, fin1);
+        const consumo2 = CrearConsumo("minutosLlamada", 200, inicio2, fin2);
+        cliente.usarRecursos(consumo1);
+        cliente.usarRecursos(consumo2);
 
+        expect(() => {cliente.comprarPaquete(paquete2)}).toThrow("Aun quedan recursos o días disponibles del paquete actual, no se puede comprar un nuevo paquete.");
     });
 
+    // TEST 24
+    test("El cliente no tiene paquetes contratados", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 10, 400);
+        cliente.cargarSaldo(paquete.obtenerInfo().costo * 2); 
+
+
+        const inicio = new Date("2024-05-01T10:00:00");
+        const fin = new Date("2024-05-11T10:00:00");
+        const consumo = CrearConsumo("datosMoviles", 2.5 * 1024, inicio, fin);
+        
+        expect(() => cliente.usarRecursos(consumo)).toThrow("El cliente no tiene paquetes contratados");
+    });
+
+    // TEST 25
+    test("El cliente tiene un paquete contratado pero no tiene saldo para renovarlo", () => {
+        const cliente = CrearCliente("Maria Lopez", 1132096752);
+        const paquete = CrearPaquete(2.5, 1000, 10, 400);
+        cliente.cargarSaldo(paquete.obtenerInfo().costo); 
+        cliente.comprarPaquete(paquete, true);
+        
+        expect(() => {
+            const inicio = new Date("2024-05-01T10:00:00");
+            const fin = new Date("2024-05-11T10:00:00");
+            const consumo = CrearConsumo("datosMoviles", 2.5 * 1024, inicio, fin);
+            cliente.usarRecursos(consumo);
+        }).toThrow("Saldo insuficiente para la renovación automática del paquete");
+    });
 });

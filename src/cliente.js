@@ -5,6 +5,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.paquetesContratados = [];
     this.renovacionAutomatica = false;
     this.historialConsumos = [];
+    this.copiaPaquete = null;
 
     this.obtenerInfo = () => {
         return {
@@ -24,10 +25,14 @@ const Cliente = function(nombreCliente, numeroLinea) {
         return saldo = this.saldo;
     };
 
-    this.comprarPaquete = (paquete, renovacionAutomatica = false) => {
+    this.validarSaldo = (paquete) => {
         if (this.saldo < paquete.obtenerInfo().costo) {
             throw new Error("Saldo insuficiente para comprar el paquete");
         }
+    }
+
+    this.comprarPaquete = (paquete, renovacionAutomatica = false) => {
+        this.validarSaldo(paquete);
         
         if (this.paquetesContratados.length > 0) {
             this.validacionRecursosActivos();
@@ -36,45 +41,74 @@ const Cliente = function(nombreCliente, numeroLinea) {
         this.saldo -= paquete.obtenerInfo().costo;
         this.paquetesContratados.push(paquete);
         this.renovacionAutomatica = renovacionAutomatica;
-
+        
+        if (renovacionAutomatica) {
+            this.copiaPaquete = this.crearCopiaPaquete(paquete);
+        }
     };
     
     this.obtenerPaquetesContratados = () => {
         return paquetes = this.paquetesContratados;
     };
     
+    this.esPaqueteFinalizado = (info) => {
+        const agotado = info.datosMoviles <= 0 && info.minutosminutosLlamada <= 0;
+        const vencido = info.diasDuracion <= 0;
+        return agotado || vencido;
+    };
+
     this.validacionRecursosActivos = () => {
-        const infoPaqueteContratado = this.paquetesContratados[0].obtenerInfo();
-        if (infoPaqueteContratado.diasDuracion == 0) {
+        const info = this.paquetesContratados[0].obtenerInfo();
+        if (this.esPaqueteFinalizado(info)) {
             this.validacionRenovacionAutomatica();
+        } 
+        else {
+            throw new Error("Aun quedan recursos o días disponibles del paquete actual, no se puede comprar un nuevo paquete.");
         }
-        else if (infoPaqueteContratado.datosMoviles > 0 || infoPaqueteContratado.minutosLlamada > 0) {
-            throw new Error("Aun quedan recursos disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos");
-        }
-        else if (infoPaqueteContratado.diasDuracion > 0) {
-            throw new Error("Aun quedan dias disponibles del paquete actual, no se puede comprar un nuevo paquete hasta que se agoten todos los recursos");
-        }
-    }
+    };
 
     this.validacionRenovacionAutomatica = () => {
-        if (this.renovacionAutomatica == false) {
-            this.paquetesContratados = [];
-        }
-    }
-
-    this.usarPaquete = () => {
-        if (this.paquetesContratados.length === 0) {
-            throw new Error("El cliente no tiene paquetes contratados");
-        }
-        if (this.renovacionAutomatica == false) {
+        if (this.renovacionAutomatica && this.copiaPaquete) {
+            const infoOriginal = this.copiaPaquete.obtenerInfo();
+            
+            if (this.saldo >= infoOriginal.costo) {
+                this.saldo -= infoOriginal.costo;
+                const PaqueteConstructor = this.copiaPaquete.constructor;
+                
+                const nuevoPaquete = new PaqueteConstructor(
+                    infoOriginal.datosMoviles, 
+                    infoOriginal.minutosminutosLlamada, 
+                    infoOriginal.diasDuracion, 
+                    infoOriginal.costo
+                );
+                this.paquetesContratados = [nuevoPaquete];
+            }
+            else {
+                this.paquetesContratados = [];
+                throw new Error("Saldo insuficiente para la renovación automática del paquete");
+            }
+        } else {
             this.paquetesContratados = [];
         }
     };
 
     this.usarRecursos = (consumo) => {
+        if (this.paquetesContratados.length === 0) {
+            throw new Error("El cliente no tiene paquetes contratados");
+        }
+
         const recursosUsados = consumo.usoDeRecurso();
         this.paquetesContratados[0].consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2]);
         this.historialConsumos.push(consumo.obtenerInfo());
+
+        const infoActual = this.paquetesContratados[0].obtenerInfo();
+        const estaAgotado = infoActual.datosMoviles <= 0 && infoActual.minutosminutosLlamada <= 0;
+        const estaVencido = infoActual.diasDuracion <= 0;
+        
+        if (estaAgotado || estaVencido) {
+            this.validacionRenovacionAutomatica();
+        }
+        
     };
 
     this.obtenerHistorialConsumos = (filtro = null) => {
@@ -86,6 +120,18 @@ const Cliente = function(nombreCliente, numeroLinea) {
             });
         }
         return listado;
+    };
+
+    this.crearCopiaPaquete = (paquete) => {
+        const info = paquete.obtenerInfo();
+        const Constructor = paquete.constructor;
+        
+        return new Constructor(
+            info.datosMoviles, 
+            info.minutosminutosLlamada, 
+            info.diasDuracion, 
+            info.costo
+        );
     };
 
 }

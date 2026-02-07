@@ -1,10 +1,10 @@
-const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
+const Paquete = function(datosMoviles, minutosminutosLlamada, diasDuracion, costo) {
     this.validaciones = () => {
         if (datosMoviles < 0) {
         throw new Error("La cantidad de datos no puede ser negativa");
         }
-        if (minutosLlamada < 0) {
-            throw new Error("La cantidad de minutos de llamada no puede ser negativa");
+        if (minutosminutosLlamada < 0) {
+            throw new Error("La cantidad de minutos de minutosLlamada no puede ser negativa");
         }
         if (diasDuracion < 0) {
             throw new Error("La cantidad de dias de duracion no puede ser negativa");
@@ -16,14 +16,14 @@ const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
     
     this.validaciones();
     this.datosMoviles = datosMoviles;
-    this.minutosLlamada = minutosLlamada;
+    this.minutosminutosLlamada = minutosminutosLlamada;
     this.diasDuracion = diasDuracion;
     this.costo = costo;
 
     this.obtenerInfo = () => {
         return {
             datosMoviles: this.datosMoviles,
-            minutosLlamada: this.minutosLlamada,
+            minutosminutosLlamada: this.minutosminutosLlamada,
             diasDuracion: this.diasDuracion,
             costo: this.costo
         };
@@ -39,34 +39,34 @@ const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
         this.diasDuracion -= diasConsumidos;
     };
 
-    this.consumirDatos = (gigasConsumidos) => {
-        if (gigasConsumidos < 0) {
-            throw new Error("La cantidad de gigas consumidos no puede ser negativa");
+    this.consumirDatos = (MBConsumidos) => {
+        if (MBConsumidos < 0) {
+            throw new Error("La cantidad de MB consumidos no puede ser negativa");
         }
-        if (gigasConsumidos > this.datosMoviles) {
-            throw new Error("La cantidad de gigas consumidos no puede superar la cantidad de datos del paquete");
+        if (MBConsumidos > this.datosMoviles * 1024) {
+            throw new Error("La cantidad de MB consumidos no puede superar la cantidad de datos del paquete");
         }
 
-        this.datosMoviles -= gigasConsumidos;  
+        this.datosMoviles = Number(this.datosMoviles - (MBConsumidos / 1024).toFixed(2));  
     };
 
-    this.consumirMinutosLlamada = (minutosConsumidos) => {
+    this.consumirMinutosminutosLlamada = (minutosConsumidos) => {
         if (minutosConsumidos < 0) {
             throw new Error("La cantidad de minutos consumidos no puede ser negativa");
         }
-        if (minutosConsumidos > this.minutosLlamada) {
+        if (minutosConsumidos > this.minutosminutosLlamada) {
             throw new Error("La cantidad de minutos consumidos no puede superar la cantidad de minutos del paquete");
         }
-        this.minutosLlamada -= minutosConsumidos;
+        this.minutosminutosLlamada -= minutosConsumidos;
     };
 
     this.consumirRecursos = (gigasConsumidos, diasUsados, tipoRecurso) => {
-        if (tipoRecurso === "Internet") {
+        if (tipoRecurso === "datosMoviles") {
             this.consumirDatos(gigasConsumidos);
             this.consumirDias(diasUsados);
         }
-        else if (tipoRecurso === "Llamada") {
-            this.consumirMinutosLlamada(gigasConsumidos);
+        else if (tipoRecurso === "minutosLlamada") {
+            this.consumirMinutosminutosLlamada(gigasConsumidos);
             this.consumirDias(diasUsados);
         }  
     };
