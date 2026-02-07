@@ -12,8 +12,8 @@ const CrearCliente = (nombreCliente, numeroLinea) => {
 
 };
 
-const CrearConsumo = (tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin) => {
-    return new Consumo(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin)
+const CrearConsumo = (tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin, appConsumida = null) => {
+    return new Consumo(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeFin, appConsumida)
 };
 
 module.exports = { CrearCliente, CrearPaquete, CrearConsumo };

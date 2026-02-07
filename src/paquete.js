@@ -60,17 +60,27 @@ const Paquete = function(datosMoviles, minutosminutosLlamada, diasDuracion, cost
         this.minutosminutosLlamada -= minutosConsumidos;
     };
 
-    this.consumirRecursos = (gigasConsumidos, diasUsados, tipoRecurso) => {
-        if (tipoRecurso === "datosMoviles") {
-            this.consumirDatos(gigasConsumidos);
-            this.consumirDias(diasUsados);
-        }
-        else if (tipoRecurso === "minutosLlamada") {
-            this.consumirMinutosminutosLlamada(gigasConsumidos);
-            this.consumirDias(diasUsados);
-        }  
-    };
+    this.consumirRecursos = (gigasConsumidos, diasUsados, tipoRecurso, appConsumida) => {
+        if (this.validacionAplicacionIlimitada(appConsumida)) {
+            if (tipoRecurso === "datosMoviles") {
+                this.consumirDatos(gigasConsumidos);
+                this.consumirDias(diasUsados);
+            }
+            else if (tipoRecurso === "minutosLlamada") {
+                this.consumirMinutosminutosLlamada(gigasConsumidos);
+                this.consumirDias(diasUsados);
+            }  
+        };
+    }
 
+    this.validacionAplicacionIlimitada = (appConsumida) => {
+        if (appConsumida != "WhatsApp") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 };
 
 module.exports = Paquete;

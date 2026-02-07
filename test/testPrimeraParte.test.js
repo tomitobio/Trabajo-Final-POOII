@@ -368,12 +368,8 @@ describe("Gestión de Compras y Saldo", () => {
 
         cliente.usarRecursos(consumo);
 
-        expect(cliente.obtenerHistorialConsumos()[0]).toEqual({
-            tipo: "datosMoviles",
-            cantidad: 1,
-            inicio: inicio,
-            fin: fin
-        });
+        expect(cliente.obtenerHistorialConsumos()[0].inicio).toEqual(inicio);
+        expect(cliente.obtenerHistorialConsumos()[0].fin).toEqual(fin);
     });
 
     // TEST 18

@@ -98,7 +98,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
         }
 
         const recursosUsados = consumo.usoDeRecurso();
-        this.paquetesContratados[0].consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2]);
+        this.paquetesContratados[0].consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2], recursosUsados[3]);
         this.historialConsumos.push(consumo.obtenerInfo());
 
         const infoActual = this.paquetesContratados[0].obtenerInfo();
