@@ -12,7 +12,7 @@ describe("Apps Ilimitadas", () => {
         const consumoWA = CrearConsumo("datosMoviles", 500, new Date(), new Date(), "WhatsApp");
         cliente.usarRecursos(consumoWA);
 
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo().datosMoviles).toBe(1);
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(1);
     });
     test("Un consumo de una app NO ilimitada debe descontar MB normalmente", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
@@ -23,7 +23,7 @@ describe("Apps Ilimitadas", () => {
         const consumoIG = CrearConsumo("datosMoviles", 512, new Date(), new Date(), "Instagram");
         cliente.usarRecursos(consumoIG);
 
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo().datosMoviles).toBe(0.5);
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(0.5);
     });
 });
 
@@ -38,8 +38,8 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
 
         emisor.regalarRecursos(receptor, "datosMoviles", 1*1024); 
         
-        expect(emisor.obtenerPaquetesContratados()[0].obtenerInfo().datosMoviles).toBe(4);
-        expect(receptor.obtenerPaquetesContratados()[0].obtenerInfo().datosMoviles).toBe(1);
+        expect(emisor.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(4);
+        expect(receptor.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(1);
     });
 
     test("No se puede realizar un regalo si el receptor tiene un plan vigente con recursos", () => {
@@ -75,8 +75,8 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
 
         emisor.regalarRecursos(receptor, "minutosLlamada", 200); 
         
-        expect(emisor.obtenerPaquetesContratados()[0].obtenerInfo().minutosLlamada).toBe(800);
-        expect(receptor.obtenerPaquetesContratados()[0].obtenerInfo().minutosLlamada).toBe(200);
+        expect(emisor.obtenerPaqueteContratado().obtenerInfo().minutosLlamada).toBe(800);
+        expect(receptor.obtenerPaqueteContratado().obtenerInfo().minutosLlamada).toBe(200);
     });
 
     test("El préstamo queda registrado ", () => {
@@ -147,7 +147,7 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
 
         emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
 
-        const infoPrestamo = receptor.obtenerPaquetesContratados()[0].obtenerInfo();
+        const infoPrestamo = receptor.obtenerPaqueteContratado().obtenerInfo();
         expect(infoPrestamo.diasDuracion).toBe(5);
     });
 

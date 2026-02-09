@@ -181,7 +181,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.usarRecursos(CrearConsumo("minutosLlamada", 1000, new Date("2024-05-10T10:00:00"), new Date("2024-05-15T10:00:00")));
 
         cliente.comprarPaquete(paquete2);
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo()).toEqual({
             datosMoviles: 5.0,
             minutosLlamada: 2000,
             diasDuracion: 60,
@@ -199,7 +199,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.comprarPaquete(paquete, true);
 
         expect(cliente.renovacionAutomatica).toBe(true);
-        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete]);
+        expect(cliente.obtenerPaqueteContratado()).toEqual(paquete);
     });
 
     // TEST 9
@@ -215,7 +215,7 @@ describe("Gestión de Compras y Saldo", () => {
         const consumo = CrearConsumo("datosMoviles", 2000, inicio, fin);
         cliente.usarRecursos(consumo);
 
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo()).toEqual({
             datosMoviles: 0.55,
             minutosLlamada: 1000,
             diasDuracion: 15,
@@ -291,7 +291,7 @@ describe("Gestión de Compras y Saldo", () => {
         // cliente.usarminutosLlamada(200, 10);
         
         cliente.usarRecursos(consumo);
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo()).toEqual({
             datosMoviles: 2.5,
             minutosLlamada: 900,
             diasDuracion: 20,
@@ -407,7 +407,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         cliente.usarRecursos(consumo);
         cliente.comprarPaquete(paquete2);
-        expect(cliente.obtenerPaquetesContratados()).toEqual([paquete2]);
+        expect(cliente.obtenerPaqueteContratado()).toEqual(paquete2);
     });
 
     // TEST 20
@@ -473,7 +473,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.usarRecursos(consumo1);
         cliente.usarRecursos(consumo2);
 
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo()).toEqual({
             datosMoviles: 2.5,
             minutosLlamada: 1000,
             diasDuracion: 30,
@@ -493,7 +493,7 @@ describe("Gestión de Compras y Saldo", () => {
         
         cliente.usarRecursos(consumo);
 
-        expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
+        expect(cliente.obtenerPaqueteContratado().obtenerInfo()).toEqual({
             datosMoviles: 2.5,
             minutosLlamada: 1000,
             diasDuracion: 10,

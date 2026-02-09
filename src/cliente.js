@@ -2,7 +2,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.nombreCliente = nombreCliente;
     this.numeroLinea = numeroLinea;
     this.saldo = 0;
-    this.paquetesContratados = [];
+    this.paqueteContratado = null; 
     this.renovacionAutomatica = false;
     this.historialConsumos = [];
     this.copiaPaquete = null;
@@ -16,31 +16,26 @@ const Cliente = function(nombreCliente, numeroLinea) {
     };
 
     this.cargarSaldo = (monto) => {
-        if (monto < 0) {
-            throw new Error("El monto a cargar no puede ser negativo");
-        }
+        if (monto < 0) throw new Error("El monto a cargar no puede ser negativo");
         this.saldo += monto;
     };
 
-    this.obtenerSaldo = () => {
-        return saldo = this.saldo;
-    };
+    this.obtenerSaldo = () => this.saldo;
 
     this.validarSaldo = (paquete) => {
         if (this.saldo < paquete.obtenerInfo().costo) {
             throw new Error("Saldo insuficiente para comprar el paquete");
         }
-    }
+    };
 
     this.comprarPaquete = (paquete, renovacionAutomatica = false) => {
         this.validarSaldo(paquete);
-        
-        if (this.paquetesContratados.length > 0) {
+        if (this.paqueteContratado !== null) {
             this.validacionRecursosActivos();
         }
         
         this.saldo -= paquete.obtenerInfo().costo;
-        this.paquetesContratados.push(paquete);
+        this.paqueteContratado = paquete;
         this.renovacionAutomatica = renovacionAutomatica;
         
         if (renovacionAutomatica) {
@@ -48,9 +43,8 @@ const Cliente = function(nombreCliente, numeroLinea) {
         }
     };
     
-    this.obtenerPaquetesContratados = () => {
-        return paquetes = this.paquetesContratados;
-    };
+
+    this.obtenerPaqueteContratado = () => paquete = this.paqueteContratado;
     
     this.esPaqueteFinalizado = (info) => {
         const agotado = info.datosMoviles <= 0 && info.minutosLlamada <= 0;
@@ -59,7 +53,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     };
 
     this.validacionRecursosActivos = () => {
-        const info = this.paquetesContratados[0].obtenerInfo();
+        const info = this.paqueteContratado.obtenerInfo();
         if (this.esPaqueteFinalizado(info)) {
             this.validacionRenovacionAutomatica();
         } 
@@ -68,7 +62,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
         }
     };
 
-    this.validacionRenovacionAutomatica = () => {
+    this.realizarRenovacionAutomatica = () => {
         if (this.renovacionAutomatica && this.copiaPaquete) {
             const infoOriginal = this.copiaPaquete.obtenerInfo();
             
@@ -82,39 +76,37 @@ const Cliente = function(nombreCliente, numeroLinea) {
                     infoOriginal.diasDuracion, 
                     infoOriginal.costo
                 );
-                this.paquetesContratados = [nuevoPaquete];
+
+                this.paqueteContratado = nuevoPaquete;
             }
             else {
-                this.paquetesContratados = [];
+                this.paqueteContratado = null;
                 throw new Error("Saldo insuficiente para la renovación automática del paquete");
             }
         } else {
-            this.paquetesContratados = [];
+            this.paqueteContratado = null;
         }
     };
 
     this.usarRecursos = (consumo) => {
-        if (this.paquetesContratados.length === 0) {
+        if (this.paqueteContratado === null) {
             throw new Error("El cliente no tiene paquetes contratados");
         }
 
         const recursosUsados = consumo.usoDeRecurso();
-        this.paquetesContratados[0].consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2], recursosUsados[3]);
+
+        this.paqueteContratado.consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2], recursosUsados[3]);
         this.historialConsumos.push(consumo.obtenerInfo());
 
-        const infoActual = this.paquetesContratados[0].obtenerInfo();
-        const estaAgotado = infoActual.datosMoviles <= 0 && infoActual.minutosLlamada <= 0;
-        const estaVencido = infoActual.diasDuracion <= 0;
+        const infoActual = this.paqueteContratado.obtenerInfo();
         
-        if (estaAgotado || estaVencido) {
-            this.validacionRenovacionAutomatica();
+        if (this.esPaqueteFinalizado(infoActual)) {
+            this.realizarRenovacionAutomatica();
         }
-        
     };
 
     this.obtenerHistorialConsumos = (filtro = null) => {
         let listado = [...this.historialConsumos].sort((a, b) => a.inicio - b.inicio);
-        
         if (filtro && filtro.desde && filtro.hasta) {
             listado = listado.filter(consumo => {
                 return consumo.inicio >= filtro.desde && consumo.inicio <= filtro.hasta;
@@ -126,7 +118,6 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.crearCopiaPaquete = (paquete) => {
         const info = paquete.obtenerInfo();
         const Constructor = paquete.constructor;
-        
         return new Constructor(
             info.datosMoviles, 
             info.minutosLlamada, 
@@ -136,31 +127,30 @@ const Cliente = function(nombreCliente, numeroLinea) {
     };
 
     this.regalarRecursos = (receptor, tipoRecurso, cantidad) => {
-        if (this.paquetesContratados.length === 0) {
+        if (this.paqueteContratado === null) {
             throw new Error("No tienes un paquete activo para realizar un regalo.");
         }
+        const paqueteEmisor = this.paqueteContratado;
 
-        const paqueteEmisor = this.paquetesContratados[0];
-        
         this.validarAceptacionDePrestamo(receptor);
         const paqueteDeRegalo = this.crearPaqueteRegalo(paqueteEmisor, tipoRecurso, cantidad);
         
-        receptor.paquetesContratados = [paqueteDeRegalo];
+        receptor.paqueteContratado = paqueteDeRegalo;
 
-        const prestamo = {
+        const registro = {
             tipo: tipoRecurso,
             cantidad: cantidad,
-            detalle: `De ${this.obtenerInfo().nombre} a ${receptor.obtenerInfo().nombre}`,
+            detalle: `De ${this.nombreCliente} a ${receptor.nombreCliente}`,
             fecha: new Date()
         };
 
-        this.historialPrestamos.push(prestamo);
-        receptor.historialPrestamos.push(prestamo);
+        this.historialPrestamos.push(registro);
+        receptor.historialPrestamos.push(registro);
     };
 
     this.validarAceptacionDePrestamo = (receptor) => {
-        const tienePaquetesActivos = receptor.obtenerPaquetesContratados().length > 0;
-        if (tienePaquetesActivos) {
+        const tienePaqueteActivo = receptor.paqueteContratado !== null;
+        if (tienePaqueteActivo) {
             throw new Error("El receptor tiene un plan vigente. Solo puede recibir regalos si su plan está agotado o vencido.");
         }
     };
@@ -200,4 +190,3 @@ const Cliente = function(nombreCliente, numeroLinea) {
 }
 
 module.exports = Cliente;
-
