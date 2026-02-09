@@ -147,15 +147,15 @@ const Cliente = function(nombreCliente, numeroLinea) {
         
         receptor.paquetesContratados = [paqueteDeRegalo];
 
-        const registro = {
+        const prestamo = {
             tipo: tipoRecurso,
             cantidad: cantidad,
-            detalle: `De ${this.obtenerInfo().nombreCliente} a ${receptor.obtenerInfo().nombreCliente}`,
+            detalle: `De ${this.obtenerInfo().nombre} a ${receptor.obtenerInfo().nombre}`,
             fecha: new Date()
         };
 
-        this.historialPrestamos.push(registro);
-        receptor.historialPrestamos.push(registro);
+        this.historialPrestamos.push(prestamo);
+        receptor.historialPrestamos.push(prestamo);
     };
 
     this.validarAceptacionDePrestamo = (receptor) => {
@@ -185,6 +185,17 @@ const Cliente = function(nombreCliente, numeroLinea) {
             diasDuracion,
             0
         );
+    };
+
+    this.obtenerHistorialPrestamos = (filtro = null) => {
+        let listado = [...this.historialPrestamos].sort((a, b) => a.fecha - b.fecha);
+        
+        if (filtro && filtro.desde && filtro.hasta) {
+            listado = listado.filter(prestamo => {
+                return prestamo.fecha >= filtro.desde && prestamo.fecha <= filtro.hasta;
+            });
+        }
+        return listado;
     };
 }
 

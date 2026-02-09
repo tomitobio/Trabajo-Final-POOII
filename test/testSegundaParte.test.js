@@ -79,6 +79,64 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
         expect(receptor.obtenerPaquetesContratados()[0].obtenerInfo().minutosLlamada).toBe(200);
     });
 
+    test("El préstamo queda registrado ", () => {
+        const emisor = CrearCliente("Maria Lopez", 1132096752);
+        const receptor = CrearCliente("Jorge Damasco", 1132096753);
+        
+        const paquete = CrearPaquete(5, 1000, 5, 500);
+        emisor.cargarSaldo(500);
+        emisor.comprarPaquete(paquete);
+
+        emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
+
+        expect(emisor.obtenerHistorialPrestamos()[0].detalle).toEqual("De Maria Lopez a Jorge Damasco");
+        expect(emisor.obtenerHistorialPrestamos()[0].fecha).toBeInstanceOf(Date);
+    });
+
+    test("El préstamo queda registrado en una lista sobre prestamos", () => {
+        const emisor = CrearCliente("Maria Lopez", 1132096752);
+        const receptor = CrearCliente("Jorge Damasco", 1132096753);
+        
+        const paquete = CrearPaquete(5, 1000, 5, 500);
+        emisor.cargarSaldo(500);
+        emisor.comprarPaquete(paquete);
+
+        emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
+        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date(), "Regalo"));
+        
+        emisor.regalarRecursos(receptor, "minutosLlamada", 200);
+
+        expect(emisor.obtenerHistorialPrestamos()[0].detalle).toEqual("De Maria Lopez a Jorge Damasco");
+        expect(emisor.obtenerHistorialPrestamos()[0].tipo).toBe("datosMoviles");
+        expect(emisor.obtenerHistorialPrestamos()[0].cantidad).toBe(1024);
+        expect(emisor.obtenerHistorialPrestamos()[1].detalle).toEqual("De Maria Lopez a Jorge Damasco");
+        expect(emisor.obtenerHistorialPrestamos()[1].tipo).toBe("minutosLlamada");
+        expect(emisor.obtenerHistorialPrestamos()[1].cantidad).toBe(200);
+        
+    });
+
+    test("El préstamo queda registrado en una lista sobre prestamos", () => {
+        const emisor = CrearCliente("Maria Lopez", 1132096752);
+        const receptor = CrearCliente("Jorge Damasco", 1132096753);
+        
+        const paquete = CrearPaquete(5, 1000, 5, 500);
+        emisor.cargarSaldo(500);
+        emisor.comprarPaquete(paquete);
+
+        emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
+        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date(), "Regalo"));
+        
+        emisor.regalarRecursos(receptor, "minutosLlamada", 200);
+
+        expect(emisor.obtenerHistorialPrestamos()[0].detalle).toEqual("De Maria Lopez a Jorge Damasco");
+        expect(emisor.obtenerHistorialPrestamos()[0].tipo).toBe("datosMoviles");
+        expect(emisor.obtenerHistorialPrestamos()[0].cantidad).toBe(1024);
+        expect(emisor.obtenerHistorialPrestamos()[1].detalle).toEqual("De Maria Lopez a Jorge Damasco");
+        expect(emisor.obtenerHistorialPrestamos()[1].tipo).toBe("minutosLlamada");
+        expect(emisor.obtenerHistorialPrestamos()[1].cantidad).toBe(200);
+        
+    });
+
     test("El préstamo debe tener la misma fecha de vencimiento que el plan del emisor", () => {
         const emisor = CrearCliente("Maria Lopez", 1132096752);
         const receptor = CrearCliente("Jorge Damasco", 1132096753);
@@ -92,5 +150,7 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
         const infoPrestamo = receptor.obtenerPaquetesContratados()[0].obtenerInfo();
         expect(infoPrestamo.diasDuracion).toBe(5);
     });
+
+
 
 });

@@ -25,4 +25,4 @@ const Consumo = function(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeF
     };
 }
 
-module.exports = Consumo
+module.exports = Consumo;
