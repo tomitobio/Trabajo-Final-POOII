@@ -1,9 +1,9 @@
-const Paquete = function(datosMoviles, minutosminutosLlamada, diasDuracion, costo) {
+const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
     this.validaciones = () => {
         if (datosMoviles < 0) {
         throw new Error("La cantidad de datos no puede ser negativa");
         }
-        if (minutosminutosLlamada < 0) {
+        if (minutosLlamada < 0) {
             throw new Error("La cantidad de minutos de minutosLlamada no puede ser negativa");
         }
         if (diasDuracion < 0) {
@@ -16,14 +16,14 @@ const Paquete = function(datosMoviles, minutosminutosLlamada, diasDuracion, cost
     
     this.validaciones();
     this.datosMoviles = datosMoviles;
-    this.minutosminutosLlamada = minutosminutosLlamada;
+    this.minutosLlamada = minutosLlamada;
     this.diasDuracion = diasDuracion;
     this.costo = costo;
 
     this.obtenerInfo = () => {
         return {
             datosMoviles: this.datosMoviles,
-            minutosminutosLlamada: this.minutosminutosLlamada,
+            minutosLlamada: this.minutosLlamada,
             diasDuracion: this.diasDuracion,
             costo: this.costo
         };
@@ -50,24 +50,24 @@ const Paquete = function(datosMoviles, minutosminutosLlamada, diasDuracion, cost
         this.datosMoviles = Number(this.datosMoviles - (MBConsumidos / 1024).toFixed(2));  
     };
 
-    this.consumirMinutosminutosLlamada = (minutosConsumidos) => {
+    this.consumirMinutosLlamada = (minutosConsumidos) => {
         if (minutosConsumidos < 0) {
             throw new Error("La cantidad de minutos consumidos no puede ser negativa");
         }
-        if (minutosConsumidos > this.minutosminutosLlamada) {
+        if (minutosConsumidos > this.minutosLlamada) {
             throw new Error("La cantidad de minutos consumidos no puede superar la cantidad de minutos del paquete");
         }
-        this.minutosminutosLlamada -= minutosConsumidos;
+        this.minutosLlamada -= minutosConsumidos;
     };
 
-    this.consumirRecursos = (gigasConsumidos, diasUsados, tipoRecurso, appConsumida) => {
+    this.consumirRecursos = (recursosConsumidos, diasUsados, tipoRecurso, appConsumida) => {
         if (this.validacionAplicacionIlimitada(appConsumida)) {
             if (tipoRecurso === "datosMoviles") {
-                this.consumirDatos(gigasConsumidos);
+                this.consumirDatos(recursosConsumidos);
                 this.consumirDias(diasUsados);
             }
             else if (tipoRecurso === "minutosLlamada") {
-                this.consumirMinutosminutosLlamada(gigasConsumidos);
+                this.consumirMinutosLlamada(recursosConsumidos);
                 this.consumirDias(diasUsados);
             }  
         };

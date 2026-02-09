@@ -6,6 +6,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     this.renovacionAutomatica = false;
     this.historialConsumos = [];
     this.copiaPaquete = null;
+    this.historialPrestamos = [];
 
     this.obtenerInfo = () => {
         return {
@@ -52,7 +53,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
     };
     
     this.esPaqueteFinalizado = (info) => {
-        const agotado = info.datosMoviles <= 0 && info.minutosminutosLlamada <= 0;
+        const agotado = info.datosMoviles <= 0 && info.minutosLlamada <= 0;
         const vencido = info.diasDuracion <= 0;
         return agotado || vencido;
     };
@@ -77,7 +78,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
                 
                 const nuevoPaquete = new PaqueteConstructor(
                     infoOriginal.datosMoviles, 
-                    infoOriginal.minutosminutosLlamada, 
+                    infoOriginal.minutosLlamada, 
                     infoOriginal.diasDuracion, 
                     infoOriginal.costo
                 );
@@ -102,7 +103,7 @@ const Cliente = function(nombreCliente, numeroLinea) {
         this.historialConsumos.push(consumo.obtenerInfo());
 
         const infoActual = this.paquetesContratados[0].obtenerInfo();
-        const estaAgotado = infoActual.datosMoviles <= 0 && infoActual.minutosminutosLlamada <= 0;
+        const estaAgotado = infoActual.datosMoviles <= 0 && infoActual.minutosLlamada <= 0;
         const estaVencido = infoActual.diasDuracion <= 0;
         
         if (estaAgotado || estaVencido) {
@@ -128,12 +129,63 @@ const Cliente = function(nombreCliente, numeroLinea) {
         
         return new Constructor(
             info.datosMoviles, 
-            info.minutosminutosLlamada, 
+            info.minutosLlamada, 
             info.diasDuracion, 
             info.costo
         );
     };
 
+    this.regalarRecursos = (receptor, tipoRecurso, cantidad) => {
+        if (this.paquetesContratados.length === 0) {
+            throw new Error("No tienes un paquete activo para realizar un regalo.");
+        }
+
+        const paqueteEmisor = this.paquetesContratados[0];
+        
+        this.validarAceptacionDePrestamo(receptor);
+        const paqueteDeRegalo = this.crearPaqueteRegalo(paqueteEmisor, tipoRecurso, cantidad);
+        
+        receptor.paquetesContratados = [paqueteDeRegalo];
+
+        const registro = {
+            tipo: tipoRecurso,
+            cantidad: cantidad,
+            detalle: `De ${this.obtenerInfo().nombreCliente} a ${receptor.obtenerInfo().nombreCliente}`,
+            fecha: new Date()
+        };
+
+        this.historialPrestamos.push(registro);
+        receptor.historialPrestamos.push(registro);
+    };
+
+    this.validarAceptacionDePrestamo = (receptor) => {
+        const tienePaquetesActivos = receptor.obtenerPaquetesContratados().length > 0;
+        if (tienePaquetesActivos) {
+            throw new Error("El receptor tiene un plan vigente. Solo puede recibir regalos si su plan está agotado o vencido.");
+        }
+    };
+
+    this.crearPaqueteRegalo = (paqueteEmisor, tipoRecurso, cantidad) => {
+        paqueteEmisor.consumirRecursos(cantidad, 0, tipoRecurso, "Regalo");
+
+        const PaqueteConstructor = paqueteEmisor.constructor;
+        let diasDuracion = paqueteEmisor.obtenerInfo().diasDuracion;
+        let datosRegalo = 0;
+        let minutosRegalo = 0;
+
+        if (tipoRecurso === "datosMoviles") {
+            datosRegalo = cantidad / 1024;
+        } else {
+            minutosRegalo = cantidad;
+        }
+
+        return new PaqueteConstructor(
+            datosRegalo,
+            minutosRegalo,
+            diasDuracion,
+            0
+        );
+    };
 }
 
 module.exports = Cliente;

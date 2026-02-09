@@ -44,7 +44,7 @@ describe("Gestion de Paquete", () => {
 
         expect(paquete.obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosminutosLlamada: 1000,
+            minutosLlamada: 1000,
             diasDuracion: 30,
             costo: 400
         });
@@ -90,13 +90,13 @@ describe("Gestion de Paquete", () => {
 
         expect(paquete1.obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosminutosLlamada: 1000,
+            minutosLlamada: 1000,
             diasDuracion: 30,
             costo: 400
         });
         expect(paquete2.obtenerInfo()).toEqual({
             datosMoviles: 5.0,
-            minutosminutosLlamada: 2000,
+            minutosLlamada: 2000,
             diasDuracion: 60,
             costo: 800
         });
@@ -183,7 +183,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.comprarPaquete(paquete2);
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 5.0,
-            minutosminutosLlamada: 2000,
+            minutosLlamada: 2000,
             diasDuracion: 60,
             costo: 800
         });
@@ -217,7 +217,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 0.55,
-            minutosminutosLlamada: 1000,
+            minutosLlamada: 1000,
             diasDuracion: 15,
             costo: 400
         });
@@ -288,12 +288,12 @@ describe("Gestión de Compras y Saldo", () => {
         const inicio = new Date("2024-05-10T10:00:00");
         const fin = new Date("2024-05-20T10:00:00");
         const consumo = CrearConsumo("minutosLlamada", 100, inicio, fin);
-        // cliente.usarMinutosminutosLlamada(200, 10);
+        // cliente.usarminutosLlamada(200, 10);
         
         cliente.usarRecursos(consumo);
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosminutosLlamada: 900,
+            minutosLlamada: 900,
             diasDuracion: 20,
             costo: 400
         });
@@ -475,7 +475,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosminutosLlamada: 1000,
+            minutosLlamada: 1000,
             diasDuracion: 30,
             costo: 400
         });
@@ -495,7 +495,7 @@ describe("Gestión de Compras y Saldo", () => {
 
         expect(cliente.obtenerPaquetesContratados()[0].obtenerInfo()).toEqual({
             datosMoviles: 2.5,
-            minutosminutosLlamada: 1000,
+            minutosLlamada: 1000,
             diasDuracion: 10,
             costo: 400
         });

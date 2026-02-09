@@ -2,8 +2,8 @@ const Cliente = require('../src/cliente');
 const Paquete = require('../src/paquete');
 const Consumo = require('../src/consumo');
 
-const CrearPaquete = (datosMoviles, minutosminutosLlamada, diasDuracion, costo) => {
-    return new Paquete(datosMoviles, minutosminutosLlamada, diasDuracion, costo)
+const CrearPaquete = (datosMoviles, minutosLlamada, diasDuracion, costo) => {
+    return new Paquete(datosMoviles, minutosLlamada, diasDuracion, costo)
 
 };
 
