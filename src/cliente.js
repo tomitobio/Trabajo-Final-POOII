@@ -1,12 +1,16 @@
+const { AplicacionEstandar } = require('./aplicacion');
+const Historial = require('./historial');
+const Consumo = require('./consumo');
+
 const Cliente = function(nombreCliente, numeroLinea) {
     this.nombreCliente = nombreCliente;
     this.numeroLinea = numeroLinea;
     this.saldo = 0;
     this.paqueteContratado = null; 
     this.renovacionAutomatica = false;
-    this.historialConsumos = [];
+    this.consumos = new Historial('inicio');
     this.copiaPaquete = null;
-    this.historialPrestamos = [];
+    this.prestamos = new Historial('fecha');
 
     this.obtenerInfo = () => {
         return {
@@ -92,27 +96,19 @@ const Cliente = function(nombreCliente, numeroLinea) {
         if (this.paqueteContratado === null) {
             throw new Error("El cliente no tiene paquetes contratados");
         }
+        
+        this.paqueteContratado.consumirRecursos(consumo);
 
-        const recursosUsados = consumo.usoDeRecurso();
-
-        this.paqueteContratado.consumirRecursos(recursosUsados[0], recursosUsados[1], recursosUsados[2], recursosUsados[3]);
-        this.historialConsumos.push(consumo.obtenerInfo());
+        this.consumos.agregar(consumo.obtenerInfo());
 
         const infoActual = this.paqueteContratado.obtenerInfo();
-        
         if (this.esPaqueteFinalizado(infoActual)) {
             this.realizarRenovacionAutomatica();
         }
     };
 
     this.obtenerHistorialConsumos = (filtro = null) => {
-        let listado = [...this.historialConsumos].sort((a, b) => a.inicio - b.inicio);
-        if (filtro && filtro.desde && filtro.hasta) {
-            listado = listado.filter(consumo => {
-                return consumo.inicio >= filtro.desde && consumo.inicio <= filtro.hasta;
-            });
-        }
-        return listado;
+        return this.consumos.obtener(filtro);
     };
 
     this.crearCopiaPaquete = (paquete) => {
@@ -144,8 +140,8 @@ const Cliente = function(nombreCliente, numeroLinea) {
             fecha: new Date()
         };
 
-        this.historialPrestamos.push(registro);
-        receptor.historialPrestamos.push(registro);
+        this.prestamos.agregar(registro);
+        receptor.prestamos.agregar(registro);
     };
 
     this.validarAceptacionDePrestamo = (receptor) => {
@@ -155,21 +151,34 @@ const Cliente = function(nombreCliente, numeroLinea) {
         }
     };
 
-    this.crearPaqueteRegalo = (paqueteEmisor, tipoRecurso, cantidad) => {
-        paqueteEmisor.consumirRecursos(cantidad, 0, tipoRecurso, "Regalo");
+this.crearPaqueteRegalo = (paqueteEmisor, tipoRecurso, cantidad) => {
 
-        const PaqueteConstructor = paqueteEmisor.constructor;
-        let diasDuracion = paqueteEmisor.obtenerInfo().diasDuracion;
+        const appRegalo = new AplicacionEstandar();
+        const fechaActual = new Date();
+        const consumoRegalo = new Consumo(
+            tipoRecurso,
+            cantidad,
+            fechaActual,
+            fechaActual,
+            appRegalo
+        );
+        paqueteEmisor.consumirRecursos(consumoRegalo);
+
+    
+        const paqueteARecibir = paqueteEmisor.constructor;
+        const infoEmisor = paqueteEmisor.obtenerInfo();
+        let diasDuracion = infoEmisor.diasDuracion;
+        
         let datosRegalo = 0;
         let minutosRegalo = 0;
 
         if (tipoRecurso === "datosMoviles") {
             datosRegalo = cantidad / 1024;
-        } else {
+        } else if (tipoRecurso === "minutosLlamada") {
             minutosRegalo = cantidad;
         }
 
-        return new PaqueteConstructor(
+        return new paqueteARecibir(
             datosRegalo,
             minutosRegalo,
             diasDuracion,
@@ -177,15 +186,9 @@ const Cliente = function(nombreCliente, numeroLinea) {
         );
     };
 
+
     this.obtenerHistorialPrestamos = (filtro = null) => {
-        let listado = [...this.historialPrestamos].sort((a, b) => a.fecha - b.fecha);
-        
-        if (filtro && filtro.desde && filtro.hasta) {
-            listado = listado.filter(prestamo => {
-                return prestamo.fecha >= filtro.desde && prestamo.fecha <= filtro.hasta;
-            });
-        }
-        return listado;
+        return this.prestamos.obtener(filtro);
     };
 }
 

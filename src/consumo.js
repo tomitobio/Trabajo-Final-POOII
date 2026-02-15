@@ -14,6 +14,11 @@ const Consumo = function(tipoConsumo, cantidadConsumida, fechaDeInicio, fechaDeF
         return [cantidadRecurso, cantidadDias, tipoConsumo, appConsumida];
     };
 
+    this.obtenerDiasConsumidos = () => {
+        const diferencia = this.fin - this.inicio;
+        return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+    };
+
     this.obtenerInfo = () => {
         return {
             tipo: this.tipo,

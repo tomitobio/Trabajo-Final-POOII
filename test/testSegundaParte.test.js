@@ -1,26 +1,29 @@
 "use strict";
 
+const { AplicacionIlimitada, AplicacionEstandar } = require("../src/aplicacion");
 const { CrearCliente, CrearPaquete, CrearConsumo } = require("./factories");
 
 describe("Apps Ilimitadas", () => {
     test("Un paquete con WhatsApp ilimitado no debe descontar MB al consumir esa app", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
-        const paquete = CrearPaquete(1, 100, 30, 200, "WhatsApp"); 
+        const whatsapp = new AplicacionIlimitada();
+        const paquete = CrearPaquete(1, 100, 30, 200, whatsapp); 
         cliente.cargarSaldo(200);
         cliente.comprarPaquete(paquete);
 
-        const consumoWA = CrearConsumo("datosMoviles", 500, new Date(), new Date(), "WhatsApp");
+        const consumoWA = CrearConsumo("datosMoviles", 500, new Date(), new Date(), whatsapp);
         cliente.usarRecursos(consumoWA);
 
         expect(cliente.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(1);
     });
     test("Un consumo de una app NO ilimitada debe descontar MB normalmente", () => {
         const cliente = CrearCliente("Maria Lopez", 1132096752);
-        const paquete = CrearPaquete(1, 100, 30, 200, "WhatsApp");
+        const instagram = new AplicacionEstandar();
+        const paquete = CrearPaquete(1, 100, 30, 200, instagram);
         cliente.cargarSaldo(200);
         cliente.comprarPaquete(paquete);
 
-        const consumoIG = CrearConsumo("datosMoviles", 512, new Date(), new Date(), "Instagram");
+        const consumoIG = CrearConsumo("datosMoviles", 512, new Date(), new Date(), instagram);
         cliente.usarRecursos(consumoIG);
 
         expect(cliente.obtenerPaqueteContratado().obtenerInfo().datosMoviles).toBe(0.5);
@@ -102,7 +105,7 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
         emisor.comprarPaquete(paquete);
 
         emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
-        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date(), "Regalo"));
+        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date()));
         
         emisor.regalarRecursos(receptor, "minutosLlamada", 200);
 
@@ -124,7 +127,7 @@ describe("Préstamos de Datos y Minutos de llamada", () => {
         emisor.comprarPaquete(paquete);
 
         emisor.regalarRecursos(receptor, "datosMoviles", 1*1024);
-        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date(), "Regalo"));
+        receptor.usarRecursos(CrearConsumo("datosMoviles", 1*1024, new Date(), new Date()));
         
         emisor.regalarRecursos(receptor, "minutosLlamada", 200);
 

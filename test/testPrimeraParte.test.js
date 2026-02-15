@@ -336,7 +336,7 @@ describe("Gestión de Compras y Saldo", () => {
         cliente.cargarSaldo(paquete.obtenerInfo().costo); 
         cliente.comprarPaquete(paquete, true);
         const inicio = new Date("2024-05-10T10:00:00");
-        const fin = new Date("2024-10-20T10:00:00");
+        const fin = new Date("2024-05-20T10:00:00");
 
         expect(() => {
             cliente.usarRecursos(CrearConsumo("minutosLlamada", -100, inicio, fin));

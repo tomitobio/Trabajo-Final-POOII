@@ -60,27 +60,21 @@ const Paquete = function(datosMoviles, minutosLlamada, diasDuracion, costo) {
         this.minutosLlamada -= minutosConsumidos;
     };
 
-    this.consumirRecursos = (recursosConsumidos, diasUsados, tipoRecurso, appConsumida) => {
-        if (this.validacionAplicacionIlimitada(appConsumida)) {
-            if (tipoRecurso === "datosMoviles") {
-                this.consumirDatos(recursosConsumidos);
-                this.consumirDias(diasUsados);
+    this.consumirRecursos = (consumo) => {
+        if (consumo.app && consumo.app.debeCobrarConsumo()) {
+            
+            const diasAConsumir = consumo.obtenerDiasConsumidos();
+            this.consumirDias(diasAConsumir);
+            
+            if (consumo.tipo === "datosMoviles") {
+                this.consumirDatos(consumo.cantidad);
+            } 
+            else if (consumo.tipo === "minutosLlamada") {
+                this.consumirMinutosLlamada(consumo.cantidad);
             }
-            else if (tipoRecurso === "minutosLlamada") {
-                this.consumirMinutosLlamada(recursosConsumidos);
-                this.consumirDias(diasUsados);
-            }  
-        };
-    }
+        }
+    };
 
-    this.validacionAplicacionIlimitada = (appConsumida) => {
-        if (appConsumida != "WhatsApp") {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
 };
 
 module.exports = Paquete;
